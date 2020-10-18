@@ -35,18 +35,24 @@ function reconcileOrder(existingBook, incomingOrder) {
 
       }
     } else {
-      if (matchingOrder[0].quantity + matchingOrder[1].quantity >= incomingOrder.quantity && matchingOrder[0].price == incomingOrder.price
-        && matchingOrder[1].price == incomingOrder.price) {
-        diff = matchingOrder[0].quantity + matchingOrder[1].quantity - incomingOrder.quantity
+      matchingOrder.quantity = matchingOrder[0].quantity
+
+      for (var j = 1; j < matchingOrder.length; j++) {
+        if (matchingOrder[j].price == matchingOrder[j - 1].price) {
+          matchingOrder.quantity += matchingOrder[j].quantity
+        }
+      }
+      if (matchingOrder.quantity >= incomingOrder.quantity && matchingOrder[0].price == incomingOrder.price) {
+        diff = matchingOrder.quantity - incomingOrder.quantity
         if (diff != 0) {
           adjustment = {
             type: matchingOrder[0].type, quantity: diff, price: matchingOrder[0].price
           }
           updatedOrder.push(adjustment)
         }
-      } else if (matchingOrder[0].quantity + matchingOrder[1].quantity < incomingOrder.quantity && matchingOrder[0].price == incomingOrder.price
-        && matchingOrder[1].price == incomingOrder.price) {
-        diff = incomingOrder.quantity - (matchingOrder[0].quantity + matchingOrder[1].quantity)
+      } else if (matchingOrder.quantity < incomingOrder.quantity && matchingOrder[0].price == incomingOrder.price
+      ) {
+        diff = incomingOrder.quantity - matchingOrder.quantity
         if (diff != 0) {
           adjustment = {
             type: incomingOrder.type, quantity: diff, price: incomingOrder.price
@@ -54,17 +60,19 @@ function reconcileOrder(existingBook, incomingOrder) {
           updatedOrder.push(adjustment)
         }
       }
+      else if (matchingOrder.price < incomingOrder.price) {
+        updatedOrder.pop()
+        updatedOrder.push(existingBook)
+        updatedOrder.push(incomingOrder)
+        updatedOrder = updatedOrder.flat()
 
+
+      }
 
     }
 
   }
   return updatedOrder
 
-
-
-
-
 }
-
 module.exports = reconcileOrder
