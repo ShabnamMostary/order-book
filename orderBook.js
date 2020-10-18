@@ -3,8 +3,10 @@ function reconcileOrder(existingBook, incomingOrder) {
   var n = existingBook.length
   if (n === 0) {
     updatedOrder = [incomingOrder]
-  } else if (n == 1 && existingBook[0].type == incomingOrder.type || existingBook[0].price != incomingOrder.price) {
-    updatedOrder.push(existingBook[0], incomingOrder)
+  } else if (n == 1) {
+    if (existingBook[0].type == incomingOrder.type || existingBook[0].price != incomingOrder.price) {
+      updatedOrder.push(existingBook[0], incomingOrder)
+    }
   } else if (n > 1) {
     var matchingOrder = []
     for (var i = 0; i < n; i++) {
@@ -24,6 +26,13 @@ function reconcileOrder(existingBook, incomingOrder) {
         diff = incomingOrder.quantity - matchingOrder[0].quantity
         adjustment = { type: incomingOrder.type, quantity: diff, price: incomingOrder.price }
         updatedOrder.push(adjustment)
+      } else if (matchingOrder[0].price < incomingOrder.price) {
+        updatedOrder.pop()
+        updatedOrder.push(existingBook)
+        updatedOrder.push(incomingOrder)
+        updatedOrder = updatedOrder.flat()
+
+
       }
     } else {
       if (matchingOrder[0].quantity + matchingOrder[1].quantity >= incomingOrder.quantity && matchingOrder[0].price == incomingOrder.price
@@ -51,6 +60,9 @@ function reconcileOrder(existingBook, incomingOrder) {
 
   }
   return updatedOrder
+
+
+
 
 
 }
