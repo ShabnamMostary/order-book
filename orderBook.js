@@ -3,11 +3,7 @@ function reconcileOrder(existingBook, incomingOrder) {
   var n = existingBook.length
   if (n === 0) {
     updatedOrder = [incomingOrder]
-  } else if (n == 1) {
-    if (existingBook[0].type == incomingOrder.type || existingBook[0].price != incomingOrder.price) {
-      updatedOrder.push(existingBook[0], incomingOrder)
-    }
-  } else if (n > 1) {
+  } else {
     var matchingOrder = []
     for (var i = 0; i < n; i++) {
       if (existingBook[i].type == incomingOrder.type) {
@@ -17,61 +13,51 @@ function reconcileOrder(existingBook, incomingOrder) {
         matchingOrder.push(existingBook[i])
       }
     }
-    if (matchingOrder.length == 1) {
-      if (matchingOrder[0].quantity > incomingOrder.quantity && matchingOrder[0].price == incomingOrder.price) {
-        var diff = matchingOrder[0].quantity - incomingOrder.quantity
-        var adjustment = { type: matchingOrder[0].type, quantity: diff, price: matchingOrder[0].price }
-        updatedOrder.push(adjustment)
-      } else if (matchingOrder[0].quantity < incomingOrder.quantity && matchingOrder[0].price == incomingOrder.price) {
-        diff = incomingOrder.quantity - matchingOrder[0].quantity
-        adjustment = { type: incomingOrder.type, quantity: diff, price: incomingOrder.price }
-        updatedOrder.push(adjustment)
-      } else if (matchingOrder[0].price < incomingOrder.price) {
-        updatedOrder.pop()
-        updatedOrder.push(existingBook)
-        updatedOrder.push(incomingOrder)
-        updatedOrder = updatedOrder.flat()
 
+    matchingOrder.quantity = 0
 
+    for (var j = 0; j < matchingOrder.length; j++) {
+      if (matchingOrder[j].price == incomingOrder.price) {
+        matchingOrder.quantity += matchingOrder[j].quantity
+      } else if (matchingOrder[j].price > incomingOrder.price && incomingOrder.type === 'sell') {
+        matchingOrder.quantity += matchingOrder[j].quantity
+      } else if (matchingOrder[j].price < incomingOrder.price && incomingOrder.type === 'buy') {
+        matchingOrder.quantity += matchingOrder[j].quantity
       }
-    } else {
-      matchingOrder.quantity = matchingOrder[0].quantity
-
-      for (var j = 1; j < matchingOrder.length; j++) {
-        if (matchingOrder[j].price == matchingOrder[j - 1].price) {
-          matchingOrder.quantity += matchingOrder[j].quantity
-        }
-      }
-      if (matchingOrder.quantity >= incomingOrder.quantity && matchingOrder[0].price == incomingOrder.price) {
-        diff = matchingOrder.quantity - incomingOrder.quantity
-        if (diff != 0) {
-          adjustment = {
-            type: matchingOrder[0].type, quantity: diff, price: matchingOrder[0].price
-          }
-          updatedOrder.push(adjustment)
-        }
-      } else if (matchingOrder.quantity < incomingOrder.quantity && matchingOrder[0].price == incomingOrder.price
-      ) {
-        diff = incomingOrder.quantity - matchingOrder.quantity
-        if (diff != 0) {
-          adjustment = {
-            type: incomingOrder.type, quantity: diff, price: incomingOrder.price
-          }
-          updatedOrder.push(adjustment)
-        }
-      }
-      else if (matchingOrder.price < incomingOrder.price) {
-        updatedOrder.pop()
-        updatedOrder.push(existingBook)
-        updatedOrder.push(incomingOrder)
-        updatedOrder = updatedOrder.flat()
-
-
-      }
+    }
+    if (matchingOrder.quantity == 0) {
+      updatedOrder.pop()
+      updatedOrder.push(existingBook)
+      updatedOrder.push(incomingOrder)
+      updatedOrder = updatedOrder.flat()
+      return updatedOrder
 
     }
-
+    if (matchingOrder.quantity >= incomingOrder.quantity) {
+      let diff = matchingOrder.quantity - incomingOrder.quantity
+      let newtype
+      if (incomingOrder.type === 'sell') {
+        newtype = 'buy'
+      } else {
+        newtype = 'sell'
+      }
+      if (diff != 0) {
+        let adjustment = {
+          type: newtype, quantity: diff, price: incomingOrder.price
+        }
+        updatedOrder.push(adjustment)
+      }
+    } else if (matchingOrder.quantity < incomingOrder.quantity) {
+      let diff = incomingOrder.quantity - matchingOrder.quantity
+      if (diff != 0) {
+        let adjustment = {
+          type: incomingOrder.type, quantity: diff, price: incomingOrder.price
+        }
+        updatedOrder.push(adjustment)
+      }
+    }
   }
+
   return updatedOrder
 
 }

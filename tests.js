@@ -24,12 +24,21 @@ describe('Order Book', () => {
         { type: 'sell', quantity: 12, price: 6000 }
       ])
     })
+    it('mytest', () => {
+      const existingBook = [{ type: 'buy', quantity: 15, price: 6000 }]
+      const incomingOrder = { type: 'sell', quantity: 20, price: 6000 }
+
+      const updatedBook = reconcileOrder(existingBook, incomingOrder)
+
+      expect(updatedBook).to.deep.equal([{ type: 'sell', quantity: 5, price: 6000 }])
+    })
 
     it('adds an order to the book when the book has a corresponding order type but it does not match', () => {
       const existingBook = [{ type: 'buy', quantity: 10, price: 6000 }]
       const incomingOrder = { type: 'sell', quantity: 12, price: 6150 }
 
-      const updatedBook = reconcileOrder(existingBook, incomingOrder)
+      const updatedBook =
+        reconcileOrder(existingBook, incomingOrder)
 
       expect(updatedBook).to.deep.equal([
         { type: 'buy', quantity: 10, price: 6000 },
