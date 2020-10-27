@@ -8,7 +8,7 @@ function reconcileOrder(existingBook, incomingOrder) {
     var matchingOrder = []
     for (var i = 0; i < n; i++) {
       //If existing book has same type as incoming order then that existing order will be added to the updated book
-      if (existingBook[i].type == incomingOrder.type) {
+      if (existingBook[i].type === incomingOrder.type) {
         updatedOrder.push(existingBook[i])
       } else {
         // if the type is different then they are added to the matchingOrder array
@@ -21,7 +21,7 @@ function reconcileOrder(existingBook, incomingOrder) {
     let matchingOrderType = (incomingOrder.type === 'buy') ? 'sell' : 'buy'
     for (var j = 0; j < matchingOrder.length; j++) {
       // any of these conditions are proifitable so order will be fulfilled 
-      if (matchingOrder[j].price == incomingOrder.price ||
+      if (matchingOrder[j].price === incomingOrder.price ||
         matchingOrder[j].price > incomingOrder.price && incomingOrder.type === 'sell' ||
         matchingOrder[j].price < incomingOrder.price && incomingOrder.type === 'buy') {
 
@@ -29,13 +29,12 @@ function reconcileOrder(existingBook, incomingOrder) {
       }
     }
     // mismatched order(price) which does not benifit any party,order will not be fulfilled.
-    if (matchingOrderQuantity == 0) {
+    if (matchingOrderQuantity === 0) {
       updatedOrder = []
       updatedOrder.push(existingBook)
       updatedOrder.push(incomingOrder)
       updatedOrder = updatedOrder.flat()
       return updatedOrder
-
     }
     // diff computes the remaining after fulfilling the incomingOrder
     let diff = Math.abs(matchingOrderQuantity - incomingOrder.quantity)
@@ -48,7 +47,6 @@ function reconcileOrder(existingBook, incomingOrder) {
       }
     }
   }
-
   return updatedOrder
 }
 module.exports = reconcileOrder
